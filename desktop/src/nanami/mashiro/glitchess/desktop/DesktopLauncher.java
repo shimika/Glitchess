@@ -1,6 +1,6 @@
 package nanami.mashiro.glitchess.desktop;
 
-import nanami.mashiro.glitchess.GlitchessMain;
+import nanami.mashiro.glitchess.screen.GlitchessMain;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
