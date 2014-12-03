@@ -24,7 +24,6 @@ public abstract class Piece {
 	}
 
 	public void ResetPosition() {
-		this.nowHp = 1;
 		this.position = Function.GetStartPosition(this.id);
 	}
 

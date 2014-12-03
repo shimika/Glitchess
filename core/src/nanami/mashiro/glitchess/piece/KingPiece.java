@@ -33,7 +33,9 @@ public class KingPiece extends Piece {
 				}
 
 				if (board[nr][nc] * this.GetTeam() <= 0) {
-					listCand.add(new Matrix(nr, nc));
+					if (!isNight || board[nr][nc] * this.GetTeam() < 0) {
+						listCand.add(new Matrix(nr, nc));
+					}
 				}
 				if (board[i][j] * this.GetTeam() != 0) {
 					break;

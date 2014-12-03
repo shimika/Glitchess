@@ -19,8 +19,9 @@ public class GameScreen implements Screen {
 	private Texture bgDay, bgNight, imgMain, imgNext;
 	private Texture imgLeftOn, imgRightOn, imgLeftOff, imgRightOff;
 	private Texture imgLeftNoteOn, imgRightNoteOn, imgLeftNoteOff, imgRightNoteOff;
-	private Texture[] imgPiece, imgPieceName, imgSelect, imgTarget, imgFlare;
+	private Texture[] imgPiece, imgPieceName, imgScript, imgSelect, imgTarget, imgFlare;
 	private Texture[][] imgNumber;
+	private Texture imgLeftWin, imgRightWin;
 
 	private Texture imgMenuBack;
 
@@ -31,7 +32,7 @@ public class GameScreen implements Screen {
 	private Status nowStatus;
 
 	private int splashMargin;
-	private int opacity, nightOpacity;
+	private int opacity, nightOpacity, victoryOpacity;
 
 	public GameScreen() {
 		nowStatus = Status.SplashDisposing;
@@ -48,6 +49,7 @@ public class GameScreen implements Screen {
 		// Draw Board
 		if (nowStatus == Status.SplashDisposing) {
 			opacity = 0;
+			victoryOpacity = 0;
 			splashMargin = ScreenFunction.EasingFunction(splashMargin, 720, 10);
 
 			// Gdx.app.log("Easing", String.format("%d", splashMargin));
@@ -88,6 +90,15 @@ public class GameScreen implements Screen {
 		if (Play.GetWinTeam() != 0) {
 			nowStatus = Status.Finished;
 			DrawComponent(0, 1, 0);
+
+			victoryOpacity = Math.min(100, victoryOpacity + 1);
+
+			spriteBatch.setColor(1.0f, 1.0f, 1.0f, (float) victoryOpacity / 100);
+			if (Play.GetWinTeam() > 0) {
+				spriteBatch.draw(imgLeftWin, 128, 104, 1024, 512);
+			} else {
+				spriteBatch.draw(imgRightWin, 128, 104, 1024, 512);
+			}
 		} else {
 			if (targetID != 0) {
 				nowStatus = Status.Shooting;
@@ -150,6 +161,7 @@ public class GameScreen implements Screen {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) && nowStatus != Status.SplashDisposing) {
 			// isPaused = !isPaused;
 			opacity = 0;
+			victoryOpacity = 0;
 			Play.ResetGame();
 
 			nowStatus = Status.Pending;
@@ -235,6 +247,8 @@ public class GameScreen implements Screen {
 	}
 
 	private void DrawComponent(int team, int op, int exceptID) {
+		spriteBatch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+
 		if (team >= 0) {
 			spriteBatch.draw(imgLeftOn, 0, 370, 255, 358);
 		} else {
@@ -258,18 +272,23 @@ public class GameScreen implements Screen {
 			spriteBatch.draw(imgRightNoteOff, 990, 680, 291, 37);
 
 			spriteBatch.draw(imgPieceName[imgType], 60, 260, 135, 50);
+			if (Play.IsNight()) {
+				spriteBatch.draw(imgScript[imgType % 10], 60, 85, 123, 31);
+			}
 		} else if (selectID < 0) {
 			spriteBatch.draw(imgLeftNoteOff, 0, 0, 280, 33);
 			spriteBatch.draw(imgRightNoteOn, 991, 300, 290, 417);
 
-			spriteBatch.draw(imgPieceName[imgType], 1000, 0, 140, 50);
+			spriteBatch.draw(imgPieceName[imgType], 1080, 583, 140, 50);
+			if (Play.IsNight()) {
+				spriteBatch.draw(imgScript[imgType % 10], 1080, 412, 123, 31);
+			}
 		} else {
 			spriteBatch.draw(imgLeftNoteOff, 0, 0, 280, 33);
 			spriteBatch.draw(imgRightNoteOff, 990, 680, 291, 37);
 		}
 
 		if (selectID != 0) {
-			spriteBatch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 			int sizetype = Board.GetSize(selectID, false, false);
 			int size = Board.GetSize(selectID, false, true);
@@ -321,11 +340,16 @@ public class GameScreen implements Screen {
 
 		imgPiece = new Texture[18];
 		imgPieceName = new Texture[18];
+		imgScript = new Texture[8];
 		for (int i = 0; i <= 1; i++) {
 			for (int j = 1; j <= 7; j++) {
 				imgPiece[i * 10 + j] = new Texture(String.format("img/piece/%d.png", i * 10 + j));
 				imgPieceName[i * 10 + j] = new Texture(String.format("img/script/name/%d.png", i
 						* 10 + j));
+
+				if (i == 0) {
+					imgScript[j] = new Texture(String.format("img/script/content/%d.png", j));
+				}
 			}
 		}
 
@@ -360,6 +384,9 @@ public class GameScreen implements Screen {
 		}
 
 		imgMenuBack = new Texture("img/menu/mask.png");
+
+		imgLeftWin = new Texture("img/victory/left.png");
+		imgRightWin = new Texture("img/victory/right.png");
 
 		Play.StartGame();
 	}
