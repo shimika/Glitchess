@@ -22,6 +22,7 @@ public class GameScreen implements Screen {
 	private Texture[] imgPiece, imgPieceName, imgScript, imgSelect, imgTarget, imgFlare;
 	private Texture[][] imgNumber;
 	private Texture imgLeftWin, imgRightWin;
+	private Texture imgHit;
 
 	private Texture imgMenuBack;
 
@@ -52,13 +53,10 @@ public class GameScreen implements Screen {
 			victoryOpacity = 0;
 			splashMargin = ScreenFunction.EasingFunction(splashMargin, 720, 10);
 
-			// Gdx.app.log("Easing", String.format("%d", splashMargin));
-
 			spriteBatch.draw(bgDay, 0, splashMargin / 2 - 360, 1280, 720);
 			spriteBatch.draw(imgMain, 0, splashMargin, 1280, 720);
 
 			splashMargin = Math.min(720, splashMargin);
-			Gdx.app.log("Opening", splashMargin + "");
 
 			if (splashMargin == 720) {
 				nowStatus = Status.Pending;
@@ -83,25 +81,26 @@ public class GameScreen implements Screen {
 			spriteBatch.draw(imgFlare[Play.GetTurn()], 0, 0, 1280, 720);
 		}
 
+		// Get Target ID
+
 		int exceptID = 0;
 		int targetID = Play.GetTargetID();
 
-		// If finished
-		if (Play.GetWinTeam() != 0) {
-			nowStatus = Status.Finished;
-			DrawComponent(0, 1, 0);
-
-			victoryOpacity = Math.min(100, victoryOpacity + 1);
-
-			spriteBatch.setColor(1.0f, 1.0f, 1.0f, (float) victoryOpacity / 100);
-			if (Play.GetWinTeam() > 0) {
-				spriteBatch.draw(imgLeftWin, 128, 104, 1024, 512);
-			} else {
-				spriteBatch.draw(imgRightWin, 128, 104, 1024, 512);
-			}
+		if (targetID != 0) {
+			nowStatus = Status.Shooting;
 		} else {
-			if (targetID != 0) {
-				nowStatus = Status.Shooting;
+			if (Play.GetWinTeam() != 0) {
+				nowStatus = Status.Finished;
+				DrawComponent(0, 1, 0);
+
+				victoryOpacity = Math.min(100, victoryOpacity + 1);
+
+				spriteBatch.setColor(1.0f, 1.0f, 1.0f, (float) victoryOpacity / 100);
+				if (Play.GetWinTeam() > 0) {
+					spriteBatch.draw(imgLeftWin, 128, 104, 1024, 512);
+				} else {
+					spriteBatch.draw(imgRightWin, 128, 104, 1024, 512);
+				}
 			} else {
 				exceptID = Play.GetMovingID();
 
@@ -111,14 +110,14 @@ public class GameScreen implements Screen {
 					nowStatus = Status.Pending;
 				}
 			}
+		}
 
-			opacity = Math.min(100, opacity + 5);
+		opacity = Math.min(100, opacity + 5);
 
-			if (nowStatus == Status.Pending) {
-				DrawComponent(Play.GetTeam(), opacity, exceptID);
-			} else if (nowStatus == Status.Moving || nowStatus == Status.Shooting) {
-				DrawComponent(Play.GetTeam() * -1, opacity, exceptID);
-			}
+		if (nowStatus == Status.Pending) {
+			DrawComponent(Play.GetTeam(), opacity, exceptID);
+		} else if (nowStatus == Status.Moving || nowStatus == Status.Shooting) {
+			DrawComponent(Play.GetTeam() * -1, opacity, exceptID);
 		}
 
 		if (nowStatus == Status.Shooting) {
@@ -167,11 +166,6 @@ public class GameScreen implements Screen {
 			nowStatus = Status.Pending;
 		}
 
-		if (false) {
-			spriteBatch.setColor(1.0f, 1.0f, 1.0f, 0.8f);
-			spriteBatch.draw(imgMenuBack, 0, 0, 1280, 720);
-		}
-
 		spriteBatch.end();
 	}
 
@@ -202,7 +196,7 @@ public class GameScreen implements Screen {
 		numCoord.x -= 30;
 		numCoord.y = 720 - numCoord.y - size / 2 - 20;
 
-		DrawString(hpString, numCoord);
+		DrawString(hpString, numCoord, 0);
 	}
 
 	private void DrawPiece(int id, Coord coord) {
@@ -219,30 +213,43 @@ public class GameScreen implements Screen {
 		spriteBatch.draw(imgPiece[imgid], coord.x - size / 2, 720 - coord.y - size / 2, size, size);
 	}
 
-	private void DrawString(String str, Coord coord) {
+	private void DrawString(String str, Coord coord, int type) {
 		for (char m : str.toCharArray()) {
 			if (m == '/') {
 				spriteBatch.draw(imgNumber[0][10], coord.x, coord.y, 11, 16);
+				coord.x += 12;
 			} else if (m == ' ') {
 
 			} else {
-				spriteBatch.draw(imgNumber[0][Integer.parseInt(Character.toString(m))], coord.x,
-						coord.y, 11, 16);
+				if (type == 0) {
+					spriteBatch.draw(imgNumber[type][Integer.parseInt(Character.toString(m))],
+							coord.x, coord.y, 11, 16);
+					coord.x += 12;
+				} else {
+					spriteBatch.draw(imgNumber[type][Integer.parseInt(Character.toString(m))],
+							coord.x, coord.y, 27, 40);
+					coord.x += 38;
+				}
 			}
-			coord.x += 12;
 		}
 	}
 
 	private void DrawDamage(int damage, Coord coord) {
 		coord.x -= 10;
-		coord.y = 720 - coord.y + (30 - Play.GetTimeout() * 30 / 50);
+		coord.y = 720 - coord.y + (15 - Play.GetTimeout() * 15 / 50);
 
 		spriteBatch.setColor(1.0f, 1.0f, 1.0f, (float) Play.GetTimeout() / 50);
+		spriteBatch.draw(imgHit, coord.x - 30, coord.y - 45, 128, 128);
 
-		for (char m : Integer.toString(damage).toCharArray()) {
-			spriteBatch.draw(imgNumber[1][Integer.parseInt(Character.toString(m))], coord.x,
-					coord.y, 30, 40);
-			coord.x += 32;
+		if (damage >= 10) {
+			for (char m : Integer.toString(damage).toCharArray()) {
+				spriteBatch.draw(imgNumber[1][Integer.parseInt(Character.toString(m))], coord.x,
+						coord.y, 30, 40);
+				coord.x += 32;
+				coord.y -= 5;
+			}
+		} else {
+			spriteBatch.draw(imgNumber[1][damage], coord.x + 15, coord.y, 30, 40);
 		}
 	}
 
@@ -275,6 +282,13 @@ public class GameScreen implements Screen {
 			if (Play.IsNight()) {
 				spriteBatch.draw(imgScript[imgType % 10], 60, 85, 123, 31);
 			}
+
+			int hp = Board.GetPieceHP(selectID);
+			int dm = Board.GetPieceAtk(selectID, Play.IsNight());
+
+			DrawString(Integer.toString(hp), new Coord(120, 192), 2);
+			DrawString(Integer.toString(dm), new Coord(120, 142), 2);
+
 		} else if (selectID < 0) {
 			spriteBatch.draw(imgLeftNoteOff, 0, 0, 280, 33);
 			spriteBatch.draw(imgRightNoteOn, 991, 300, 290, 417);
@@ -283,6 +297,12 @@ public class GameScreen implements Screen {
 			if (Play.IsNight()) {
 				spriteBatch.draw(imgScript[imgType % 10], 1080, 412, 123, 31);
 			}
+
+			int hp = Board.GetPieceHP(selectID);
+			int dm = Board.GetPieceAtk(selectID, Play.IsNight());
+
+			DrawString(Integer.toString(hp), new Coord(1140, 520), 2);
+			DrawString(Integer.toString(dm), new Coord(1140, 470), 2);
 		} else {
 			spriteBatch.draw(imgLeftNoteOff, 0, 0, 280, 33);
 			spriteBatch.draw(imgRightNoteOff, 990, 680, 291, 37);
@@ -337,6 +357,7 @@ public class GameScreen implements Screen {
 		bgDay = new Texture("img/field/bg_day.jpg");
 		bgNight = new Texture("img/field/bg_night.jpg");
 		imgMain = new Texture("img/main.jpg");
+		imgHit = new Texture("img/field/hit.png");
 
 		imgPiece = new Texture[18];
 		imgPieceName = new Texture[18];
@@ -365,6 +386,7 @@ public class GameScreen implements Screen {
 		for (int i = 0; i <= 9; i++) {
 			imgNumber[0][i] = new Texture(String.format("img/number/small/%d.png", i));
 			imgNumber[1][i] = new Texture(String.format("img/number/red/%d.png", i));
+			imgNumber[2][i] = new Texture(String.format("img/number/big/%d.png", i));
 		}
 		imgNumber[0][10] = new Texture("img/number/small/s.png");
 

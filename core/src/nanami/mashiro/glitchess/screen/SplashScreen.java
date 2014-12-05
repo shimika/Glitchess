@@ -2,6 +2,7 @@ package nanami.mashiro.glitchess.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,6 +13,14 @@ public class SplashScreen implements Screen {
 
 	private static GlitchessMain game;
 	private static Boolean isMenu = false;
+
+	private static Sound soundMain;
+
+	private enum SoundStatus {
+		Play, Stop,
+	};
+
+	SoundStatus soundStatus = SoundStatus.Stop;
 
 	public SplashScreen(GlitchessMain g) {
 		game = g;
@@ -30,6 +39,12 @@ public class SplashScreen implements Screen {
 		}
 
 		if (isMenu) {
+			if (soundStatus == SoundStatus.Stop) {
+				soundStatus = SoundStatus.Play;
+				long id = soundMain.play();
+				soundMain.setLooping(id, true);
+			}
+
 			spriteBatch.setColor(1, 1, 1, 1);
 			spriteBatch.draw(imgMain, 0, 0, 1280, 720);
 		} else {
@@ -49,7 +64,11 @@ public class SplashScreen implements Screen {
 		spriteBatch.end();
 
 		if (Gdx.input.justTouched() && isMenu) {
-			// game.setScreen(new MenuScreen(game));
+			soundMain.stop();
+
+			Sound soundStart = Gdx.audio.newSound(Gdx.files.internal("sound/startup.mp3"));
+			soundStart.play();
+
 			game.StartGame();
 			Gdx.app.log("Tap", Gdx.input.getX() + " : " + Gdx.input.getY());
 		}
@@ -61,6 +80,8 @@ public class SplashScreen implements Screen {
 
 		imgSplash = new Texture("img/splash.png");
 		imgMain = new Texture("img/main.jpg");
+
+		soundMain = Gdx.audio.newSound(Gdx.files.internal("sound/main.mp3"));
 	}
 
 	@Override
@@ -82,5 +103,6 @@ public class SplashScreen implements Screen {
 
 	@Override
 	public void dispose() {
+		soundMain.dispose();
 	}
 }

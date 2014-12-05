@@ -13,8 +13,8 @@ public class GlitchessMain extends Game {
 		gameScreen = new GameScreen();
 		splashScreen = new SplashScreen(this);
 
-		this.setScreen(gameScreen);
-		// this.setScreen(splashScreen);
+		// this.setScreen(gameScreen);
+		this.setScreen(splashScreen);
 	}
 
 	public void StartGame() {

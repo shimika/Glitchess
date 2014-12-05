@@ -6,11 +6,17 @@ import nanami.mashiro.glitchess.screen.Coord;
 import nanami.mashiro.glitchess.screen.Matrix;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 
 public class Play {
 	public static void StartGame() {
 		Board.InitBoard();
 		ResetGame();
+
+		soundMove = Gdx.audio.newSound(Gdx.files.internal("sound/move.mp3"));
+		soundHit = Gdx.audio.newSound(Gdx.files.internal("sound/hit.mp3"));
+		soundDestroy = Gdx.audio.newSound(Gdx.files.internal("sound/destroy.mp3"));
+		soundWin = Gdx.audio.newSound(Gdx.files.internal("sound/win.mp3"));
 	}
 
 	private static int team, selectedID, turn, winTeam;
@@ -21,6 +27,8 @@ public class Play {
 	private static Coord movingPosition, movingTarget;
 
 	private static int targetID, damage, timeout;
+
+	private static Sound soundBGM, soundWin, soundHit, soundDestroy, soundMove;
 
 	public static int GetTeam() {
 		return team;
@@ -101,6 +109,19 @@ public class Play {
 		movingPosition = new Coord();
 
 		Board.ResetPiece();
+
+		StopMusic();
+		soundBGM = Gdx.audio.newSound(Gdx.files.internal("sound/game.mp3"));
+		long id = soundBGM.play(0.3f);
+		soundBGM.setLooping(id, true);
+	}
+
+	private static void StopMusic() {
+		try {
+			soundWin.stop();
+			soundBGM.stop();
+		} catch (Exception e) {
+		}
 	}
 
 	private static void SetNight() {
@@ -166,16 +187,26 @@ public class Play {
 
 						Board.SetPieceHP(id, hp - atk);
 
-						if (Board.GetPieceHP(16) <= 0) {
-							// Right win
-							winTeam = -1;
-							selectedID = 0;
-						} else if (Board.GetPieceHP(-16) <= 0) {
-							// Left win
-							winTeam = 1;
-							selectedID = 0;
+						if (Board.GetPieceHP(id) <= 0) {
+							soundDestroy.play();
+						} else {
+							soundHit.play();
 						}
 
+						if (Board.GetPieceHP(16) <= 0 || Board.GetPieceHP(-16) <= 0) {
+							if (Board.GetPieceHP(16) <= 0) {
+								// Right win
+								winTeam = -1;
+								selectedID = 0;
+							} else if (Board.GetPieceHP(-16) <= 0) {
+								// Left win
+								winTeam = 1;
+								selectedID = 0;
+							}
+
+							StopMusic();
+							soundWin.play();
+						}
 					}
 					Gdx.app.log("King", Board.GetPieceHP(16) + " : " + Board.GetPieceHP(-16));
 
@@ -184,6 +215,8 @@ public class Play {
 						movingPosition = Function.GetCoord(Board.GetPiecePosition(selectedID));
 						movingTarget = Function.GetCoord(matrix);
 						Board.SetPiecePosition(selectedID, matrix);
+
+						soundMove.play();
 					}
 
 					selectedID = 0;
