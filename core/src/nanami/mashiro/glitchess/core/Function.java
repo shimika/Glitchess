@@ -114,7 +114,7 @@ public class Function {
 	private static Random random = new Random();
 
 	public static int GetRandomDamage(int damage) {
-		int low = damage / 2;
+		int low = damage / 5;
 		int upp = (damage * 6) / 5;
 
 		return low + (int) (Math.random() * (upp - low + 1));

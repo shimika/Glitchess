@@ -44,7 +44,7 @@ public class ChaPiece extends Piece {
 	@Override
 	public void Reset() {
 		super.ResetPosition();
-		this.SetHp(20);
+		this.SetHp(5);
 		this.SetAtk(20);
 	}
 

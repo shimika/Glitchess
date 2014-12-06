@@ -47,7 +47,7 @@ public class JolPiece extends Piece {
 	public void Reset() {
 		super.ResetPosition();
 		this.SetHp(10);
-		this.SetAtk(10);
+		this.SetAtk(15);
 	}
 
 	@Override

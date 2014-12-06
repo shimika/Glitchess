@@ -210,7 +210,7 @@ public class Play {
 					}
 					Gdx.app.log("King", Board.GetPieceHP(16) + " : " + Board.GetPieceHP(-16));
 
-					if (id == 0) {
+					if ((id == 0 || Board.GetPieceHP(id) <= 0) && winTeam == 0) {
 						movingID = selectedID;
 						movingPosition = Function.GetCoord(Board.GetPiecePosition(selectedID));
 						movingTarget = Function.GetCoord(matrix);

@@ -91,7 +91,7 @@ public class GameScreen implements Screen {
 		} else {
 			if (Play.GetWinTeam() != 0) {
 				nowStatus = Status.Finished;
-				DrawComponent(0, 1, 0);
+				DrawComponent(0, 1, 0, 0);
 
 				victoryOpacity = Math.min(100, victoryOpacity + 1);
 
@@ -115,12 +115,17 @@ public class GameScreen implements Screen {
 		opacity = Math.min(100, opacity + 5);
 
 		if (nowStatus == Status.Pending) {
-			DrawComponent(Play.GetTeam(), opacity, exceptID);
+			DrawComponent(Play.GetTeam(), opacity, 0, 0);
 		} else if (nowStatus == Status.Moving || nowStatus == Status.Shooting) {
-			DrawComponent(Play.GetTeam() * -1, opacity, exceptID);
+			DrawComponent(Play.GetTeam() * -1, opacity, 0, Play.GetMovingID());
 		}
 
 		if (nowStatus == Status.Shooting) {
+			if (Play.GetMovingID() != 0) {
+				Coord nowCoord = Play.GetMovingPosition();
+				DrawPiece(Play.GetMovingID(), nowCoord);
+			}
+
 			int damage = Play.GetDamage();
 
 			Matrix matrix = Board.GetPiecePosition(targetID);
@@ -253,7 +258,7 @@ public class GameScreen implements Screen {
 		}
 	}
 
-	private void DrawComponent(int team, int op, int exceptID) {
+	private void DrawComponent(int team, int op, int except1, int except2) {
 		spriteBatch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 		if (team >= 0) {
@@ -338,7 +343,7 @@ public class GameScreen implements Screen {
 		for (int i = 0; i < Board.MAXROW; i++) {
 			for (int j = 0; j < Board.MAXCOL; j++) {
 				int id = Board.GetPieceID(i, j);
-				if (id != 0 && id != exceptID) {
+				if (id != 0 && id != except1 && id != except2) {
 					DrawPiece(id, team, new Matrix(i, j));
 				}
 			}
