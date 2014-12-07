@@ -156,7 +156,8 @@ public class GameScreen implements Screen {
 				int y = Gdx.input.getY();
 
 				Matrix matrix = Function.GetMatrix(x, y);
-				Gdx.app.log("Tap", x + ", " + y + " -> " + matrix.row + " by " + matrix.col);
+				// Gdx.app.log("Tap", x + ", " + y + " -> " + matrix.row +
+				// " by " + matrix.col);
 
 				Play.Select(matrix);
 			}

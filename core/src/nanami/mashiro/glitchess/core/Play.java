@@ -140,6 +140,29 @@ public class Play {
 		return turn % 15 + 1;
 	}
 
+	private static Boolean IsCandExists() {
+		int count = 0;
+		Boolean flag = false;
+		for (int i = 1; i <= 16; i++) {
+			if (Board.GetPieceHP(i * team) <= 0) {
+				continue;
+			}
+			count++;
+
+			ArrayList<Matrix> list = Board.GetCandidatePosition(i * team, isNight);
+			Gdx.app.log("GetCand", i * team + " : " + isNight);
+			if (list.size() > 0) {
+				flag = true;
+			}
+		}
+
+		if (count <= 1) {
+			return false;
+		}
+
+		return flag;
+	}
+
 	public static void Select(Matrix matrix) {
 		// Invailed coordinate select
 		if (matrix.row < 0 || matrix.col < 0) {
@@ -181,6 +204,8 @@ public class Play {
 						int hp = Board.GetPieceHP(id);
 						int atk = Function.GetRandomDamage(Board.GetPieceAtk(selectedID, isNight));
 
+						atk *= 100;
+
 						timeout = 50;
 						targetID = id;
 						damage = atk;
@@ -211,12 +236,14 @@ public class Play {
 					Gdx.app.log("King", Board.GetPieceHP(16) + " : " + Board.GetPieceHP(-16));
 
 					if ((id == 0 || Board.GetPieceHP(id) <= 0) && winTeam == 0) {
-						movingID = selectedID;
-						movingPosition = Function.GetCoord(Board.GetPiecePosition(selectedID));
-						movingTarget = Function.GetCoord(matrix);
-						Board.SetPiecePosition(selectedID, matrix);
+						if (Math.abs(selectedID) != 16 || !isNight) {
+							movingID = selectedID;
+							movingPosition = Function.GetCoord(Board.GetPiecePosition(selectedID));
+							movingTarget = Function.GetCoord(matrix);
+							Board.SetPiecePosition(selectedID, matrix);
 
-						soundMove.play();
+							soundMove.play();
+						}
 					}
 
 					selectedID = 0;
@@ -225,18 +252,23 @@ public class Play {
 
 					Board.RefreshBoard();
 
-					for (int i = 1; i >= -1; i -= 2) {
-						for (int j = 1; j <= 16; j++) {
-							System.out.print(String.format("(%3d: %d)", i * j,
-									Board.GetPieceHP(i * j)));
-						}
-						System.out.println();
-					}
+					/*
+					 * for (int i = 1; i >= -1; i -= 2) { for (int j = 1; j <=
+					 * 16; j++) { System.out.print(String.format("(%3d: %d)", i
+					 * * j, Board.GetPieceHP(i * j))); } System.out.println(); }
+					 */
 
 					SetNight();
+
+					Gdx.app.log("CandExists", team + " : " + IsCandExists());
+
+					if (!IsCandExists()) {
+						winTeam = team * -1;
+						selectedID = 0;
+					}
 				}
 
-				Gdx.app.log("ChangeSelect", isInCand + "");
+				// Gdx.app.log("ChangeSelect", isInCand + "");
 			}
 		}
 	}
